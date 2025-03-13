@@ -1,10 +1,13 @@
 const std = @import("std");
 const rtt = @import("rtt");
 const microzig = @import("microzig");
-const rp2040 = microzig.hal;
-const time = rp2040.time;
-const Pin = rp2040.gpio.Pin;
-const gpio = rp2040.gpio;
+const mdf = microzig.drivers;
+const rp2xxx = microzig.hal;
+const ClockDevice = rp2xxx.drivers.ClockDevice;
+var cd = ClockDevice{};
+const clock = cd.clock_device();
+const Pin = rp2xxx.gpio.Pin;
+const gpio = rp2xxx.gpio;
 
 /// Dummy example of defining a custom locking/unlocking mechanisms for thread safety
 const pretend_thread_safety = struct {
@@ -63,7 +66,7 @@ pub fn log(
     };
 
     if (rtt_logger) |writer| {
-        const current_time = time.get_time_since_boot();
+        const current_time = clock.get_time_since_boot();
         const seconds = current_time.to_us() / std.time.us_per_s;
         const microseconds = current_time.to_us() % std.time.us_per_s;
 
@@ -73,14 +76,14 @@ pub fn log(
 
 /// Assigns our custom RTT logging function to MicroZig's log function
 /// A "pub const std_options" decl could be used here instead if not using MicroZig
-pub const microzig_options = .{
+pub const microzig_options = microzig.Options{
     .logFn = log,
 };
 
 pub fn main() !void {
 
     // Don't forget to bring a blinky!
-    var led_gpio = rp2040.gpio.num(25);
+    var led_gpio = rp2xxx.gpio.num(25);
     led_gpio.set_direction(.out);
     led_gpio.set_function(.sio);
     led_gpio.put(1);
@@ -98,14 +101,15 @@ pub fn main() !void {
     const reader = rtt_instance.reader(0);
     const max_line_len = 1024;
     var line_buffer = try std.BoundedArray(u8, max_line_len).init(0);
-    var blink_deadline = time.make_timeout_us(500_000);
+    var blink_deadline = mdf.time.make_timeout_us(clock.get_time_since_boot(), 500_000);
     var led_val: u1 = 0;
     while (true) {
+        const now = clock.get_time_since_boot();
         // Toggle LED every 500 msec
-        if (blink_deadline.is_reached()) {
+        if (blink_deadline.is_reached_by(now)) {
             led_gpio.put(led_val);
             led_val = if (led_val == 0) 1 else 0;
-            blink_deadline = time.make_timeout_us(500_000);
+            blink_deadline = mdf.time.make_timeout_us(now, 500_000);
         }
 
         // Read some bytes into line buffer, continuing if we get end of stream before our delimiter

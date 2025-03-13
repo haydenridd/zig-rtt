@@ -356,7 +356,7 @@ fn BuildBufferStorageType(comptime up_channels: []const channel.Config, comptime
                 .type = buffer_type,
                 .is_comptime = false,
                 .alignment = @alignOf(buffer_type),
-                .default_value = null,
+                .default_value_ptr = null,
             };
         }
         for (down_channels, 0..) |down_cfg, idx| {
@@ -366,14 +366,14 @@ fn BuildBufferStorageType(comptime up_channels: []const channel.Config, comptime
                 .type = buffer_type,
                 .is_comptime = false,
                 .alignment = @alignOf(buffer_type),
-                .default_value = null,
+                .default_value_ptr = null,
             };
         }
         break :v &fields_temp;
     };
 
     return @Type(.{
-        .Struct = .{
+        .@"struct" = .{
             .layout = .@"extern",
             .fields = fields,
             .decls = &[_]std.builtin.Type.Declaration{},
@@ -454,7 +454,7 @@ pub fn RTT(comptime config: Config) type {
         ) = undefined;
 
         comptime {
-            if (config.linker_section) |section| @export(control_block, .{
+            if (config.linker_section) |section| @export(&control_block, .{
                 .name = "RttControlBlock",
                 .section = section,
             });

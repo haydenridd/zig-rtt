@@ -1,5 +1,6 @@
 .{
-    .name = "rtt_example",
+    .name = .rttexample,
+    .fingerprint = 0x67e37481b8ec6cd2,
     .version = "0.0.0",
     .dependencies = .{
         .microzig = .{ .path = "microzig" },

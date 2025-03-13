@@ -2,7 +2,7 @@
 
 An implementation of [Segger's RTT protocol](https://wiki.segger.com/RTT) in pure Zig.
 
-This library currently tracks Zig language version `0.13.0`.
+This library currently tracks Zig language version `0.14.0`.
 ## Installation
 
 Add `rtt` as a dependency to `build.zig.zon` like so:
@@ -39,11 +39,11 @@ const rtt_instance = rtt.RTT(.{
 });
 ```
 
-This mirrors the functionality presented in the original `SEGGER_RTT_Conf.h` file, except you 
+This mirrors the functionality presented in the original `SEGGER_RTT_Conf.h` file, except you
 can specify a compile time configuration for _every_ up and down channel as opposed to just
 up/down channel 0!
 
-Every field in `rtt.Config` is optional, and an empty `Config` gives the default behavior of the 
+Every field in `rtt.Config` is optional, and an empty `Config` gives the default behavior of the
 original RTT default config which is:
 - Single up channel with a buffer size of 1024 bytes
 - Single down channel with a buffer size of 16 bytes
@@ -57,7 +57,7 @@ It exposes a `GenericLock` function that creates a type given lock/unlock functi
 to each function. This type has a method `any()`, that returns a type erased `AnyLock` that can be passed to a `rtt.Config`.
 Users can utilize this API to specify their own custom lock/unlock behavior for RTT to use if the default behavior isn't desired.
 Assigning `null` to `.exclusive_access` disables thread safety entirely.
- 
+
 ## Usage
 
 Once an rtt instance is configured, the API is quite simple:
@@ -70,9 +70,6 @@ Once an rtt instance is configured, the API is quite simple:
 See the [example](rp2040_example) for more information on using this package.
 
 ## TODO:
-- Switch MicroZig submodule in example to a tagged release in `build.zig.zon` once `0.13.0` or higher gets released
 - Support for CPUs with caches (cache alignment + cache access considerations) to mirror the `SEGGER_RTT_CPU_CACHE_LINE_SIZE` and `SEGGER_RTT_UNCACHED_OFF` macros in original Segger source
 - Support for virtual terminals supported by RTT viewer
-- Support for ANSI terminal color escape codes supported by RTT viewer 
-
-
+- Support for ANSI terminal color escape codes supported by RTT viewer
