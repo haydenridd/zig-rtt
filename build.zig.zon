@@ -2,7 +2,7 @@
     .name = .rtt,
     .fingerprint = 0xb40f6cfbbfaeb6b3,
     .version = "0.0.0",
-    .minimum_zig_version = "0.13.0",
+    .minimum_zig_version = "0.14.1",
     .dependencies = .{},
     .paths = .{
         "build.zig",
