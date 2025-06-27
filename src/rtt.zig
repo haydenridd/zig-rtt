@@ -317,7 +317,7 @@ pub const channel = struct {
 
                 // Force data write to be complete before writing the read_offset, in case CPU
                 // is allowed to change the order of memory accesses
-                asm volatile ("DMB");
+                barrierFn();
                 self.read_offset = read_offset;
 
                 return bytes_read;
