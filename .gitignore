@@ -5,3 +5,4 @@ debug.*
 flash_fw.sh
 native_example
 port_to_microzig.py
+venv
