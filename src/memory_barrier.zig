@@ -1,12 +1,12 @@
 const std = @import("std");
 const builtin = @import("builtin");
 
-pub const MemoryBarrierFn = fn () callconv(.Inline) void;
+pub const MemoryBarrierFn = fn () callconv(.@"inline") void;
 
 pub inline fn emptyMemoryBarrier() void {}
 
 inline fn armMemoryBarrier() void {
-    asm volatile ("DMB" ::: "memory");
+    asm volatile ("DMB" ::: .{ .memory = true });
 }
 
 inline fn errorMemoryBarrier() void {

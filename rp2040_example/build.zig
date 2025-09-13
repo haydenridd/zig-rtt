@@ -8,7 +8,7 @@ const MicroBuild = microzig.MicroBuild(.{
 
 pub fn build(b: *std.Build) void {
     const mz_dep = b.dependency("microzig", .{});
-    const mz = MicroBuild.init(b, mz_dep) orelse unreachable;
+    const mz = MicroBuild.init(b, mz_dep) orelse return;
 
     const optimize = b.standardOptimizeOption(.{});
     const firmware = mz.add_firmware(.{
