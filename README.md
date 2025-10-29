@@ -2,7 +2,7 @@
 
 An implementation of [Segger's RTT protocol](https://wiki.segger.com/RTT) in pure Zig.
 
-This library currently tracks Zig language version `0.15.1`.
+This library currently tracks Zig language version `0.15.2`.
 ## Installation
 
 Add `rtt` as a dependency to `build.zig.zon` like so:
