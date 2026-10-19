@@ -35,9 +35,9 @@ const Header = extern struct {
 
 pub const channel = struct {
     pub const Mode = enum(usize) {
-        NoBlockSkip = 0,
-        NoBlockTrim = 1,
-        BlockIfFull = 2,
+        no_block_skip = 0,
+        no_block_trim = 1,
+        block_if_full = 2,
         _,
     };
 
@@ -91,11 +91,11 @@ pub const channel = struct {
             }
 
             fn mode(self: *Self) Mode {
-                return std.meta.intToEnum(Mode, self.flags & 3) catch unreachable;
+                return @fromBackingInt(self.flags & 3);
             }
 
             fn setMode(self: *Self, mode_: Mode) void {
-                self.flags = (self.flags & ~@as(usize, 3)) | @intFromEnum(mode_);
+                self.flags = (self.flags & ~@as(usize, 3)) | @backingInt(mode_);
             }
 
             /// Writes up to available space left in buffer for reading by probe, returning number of bytes
@@ -161,15 +161,15 @@ pub const channel = struct {
                 exclusive_access.lockFn(exclusive_access.context);
                 defer exclusive_access.unlockFn(exclusive_access.context);
                 switch (self.mode()) {
-                    .NoBlockSkip => {
+                    .no_block_skip => {
                         if (bytes.len <= self.availableSpace()) {
                             return self.writeAvailable(bytes);
                         } else return 0;
                     },
-                    .NoBlockTrim => {
+                    .no_block_trim => {
                         return self.writeAvailable(bytes);
                     },
-                    .BlockIfFull => {
+                    .block_if_full => {
                         return self.writeBlocking(bytes);
                     },
                     _ => unreachable,
@@ -182,15 +182,15 @@ pub const channel = struct {
                 exclusive_access.lockFn(exclusive_access.context);
                 defer exclusive_access.unlockFn(exclusive_access.context);
                 switch (self.mode()) {
-                    .NoBlockSkip => {
+                    .no_block_skip => {
                         if (bytes.len <= self.availableSpace()) {
                             _ = self.writeAvailable(bytes);
                         }
                     },
-                    .NoBlockTrim => {
+                    .no_block_trim => {
                         _ = self.writeAvailable(bytes);
                     },
-                    .BlockIfFull => {
+                    .block_if_full => {
                         _ = self.writeBlocking(bytes);
                     },
                     _ => unreachable,
@@ -305,11 +305,11 @@ pub const channel = struct {
             }
 
             pub fn mode(self: *Self) Mode {
-                return std.meta.intToEnum(Mode, self.mode & 3);
+                return @fromBackingInt(self.mode & 3);
             }
 
             pub fn setMode(self: *Self, mode_: Mode) void {
-                self.flags = (self.flags & ~@as(usize, 3)) | @intFromEnum(mode_);
+                self.flags = (self.flags & ~@as(usize, 3)) | @backingInt(mode_);
             }
 
             /// Reads up to a number of bytes from probe non-blocking. Reading less than the requested number of bytes
@@ -422,39 +422,29 @@ pub const channel = struct {
 ///
 /// Fields follow the naming convention "up_buffer_N" for up channels, and "down_buffer_N" for down channels.
 fn BuildBufferStorageType(comptime up_channels: []const channel.Config, comptime down_channels: []const channel.Config) type {
-    const fields: []const std.builtin.Type.StructField = comptime v: {
-        var fields_temp: [up_channels.len + down_channels.len]std.builtin.Type.StructField = undefined;
-        for (up_channels, 0..) |up_cfg, idx| {
-            const buffer_type = [up_cfg.buffer_size]u8;
-            fields_temp[idx] = .{
-                .name = std.fmt.comptimePrint("up_buffer_{d}", .{idx}),
-                .type = buffer_type,
-                .is_comptime = false,
-                .alignment = @alignOf(buffer_type),
-                .default_value_ptr = null,
-            };
-        }
-        for (down_channels, 0..) |down_cfg, idx| {
-            const buffer_type = [down_cfg.buffer_size]u8;
-            fields_temp[up_channels.len + idx] = .{
-                .name = std.fmt.comptimePrint("down_buffer_{d}", .{idx}),
-                .type = buffer_type,
-                .is_comptime = false,
-                .alignment = @alignOf(buffer_type),
-                .default_value_ptr = null,
-            };
-        }
-        break :v &fields_temp;
-    };
+    const count = up_channels.len + down_channels.len;
+    var field_names: [count][]const u8 = undefined;
+    var field_types: [count]type = undefined;
+    var field_attrs: [count]std.builtin.Type.Struct.FieldAttributes = undefined;
 
-    return @Type(.{
-        .@"struct" = .{
-            .layout = .@"extern",
-            .fields = fields,
-            .decls = &[_]std.builtin.Type.Declaration{},
-            .is_tuple = false,
-        },
-    });
+    var i: usize = 0;
+    for (up_channels, 0..) |up_cfg, idx| {
+        field_names[i] = std.fmt.comptimePrint("up_buffer_{d}", .{idx});
+        field_types[i] = [up_cfg.buffer_size]u8;
+        field_attrs[i] = .{};
+
+        i += 1;
+    }
+
+    for (down_channels, 0..) |down_cfg, idx| {
+        field_names[i] = std.fmt.comptimePrint("down_buffer_{d}", .{idx});
+        field_types[i] = [down_cfg.buffer_size]u8;
+        field_attrs[i] = .{};
+
+        i += 1;
+    }
+
+    return @Struct(.@"extern", null, &field_names, &field_types, &field_attrs);
 }
 
 /// Creates a control block struct for the given channel configs. Buffer storage is also contained within this struct, although
@@ -498,8 +488,8 @@ fn ControlBlock(comptime up_channels: []const channel.Config, comptime down_chan
 
 /// Compile time configuration of RTT instance
 pub const Config = struct {
-    up_channels: []const channel.Config = &[_]channel.Config{.{ .name = "Terminal", .buffer_size = 1024, .mode = .NoBlockSkip }},
-    down_channels: []const channel.Config = &[_]channel.Config{.{ .name = "Terminal", .buffer_size = 16, .mode = .BlockIfFull }},
+    up_channels: []const channel.Config = &[_]channel.Config{.{ .name = "Terminal", .buffer_size = 1024, .mode = .no_block_skip }},
+    down_channels: []const channel.Config = &[_]channel.Config{.{ .name = "Terminal", .buffer_size = 16, .mode = .block_if_full }},
     /// Optionally supply a custom implementation of exclusive access protection (lock/unlock),
     /// defaults to original Segger lock implementation when not provided, disables lock protection when
     /// provided with null.
@@ -529,9 +519,9 @@ pub fn RTT(comptime config: Config) type {
         ) = undefined;
 
         comptime {
-            if (config.linker_section) |section| @export(&control_block, .{
+            @export(&control_block, .{
                 .name = "RttControlBlock",
-                .section = section,
+                .section = config.linker_section orelse ".data",
             });
         }
 

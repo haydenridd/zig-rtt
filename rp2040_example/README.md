@@ -19,4 +19,5 @@ And when the buffer information is examined you can see our configuration was su
 
 ![Buffer Config 2](images/buffer2.png)
 
-Note that this example uses the [MicroZig](https://github.com/ZigEmbeddedGroup/microzig) framework for the Raspberry Pi Pico's HAL, however MicroZig is not required to use this package.
+Note that this example uses the [MicroZig](https://github.com/ZigEmbeddedGroup/microzig) framework for the Raspberry
+Pi Pico's HAL, however MicroZig is not required to use this package.

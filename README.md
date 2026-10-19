@@ -2,7 +2,8 @@
 
 An implementation of [Segger's RTT protocol](https://wiki.segger.com/RTT) in pure Zig.
 
-This library currently tracks Zig language version `0.15.2`.
+This library currently tracks Zig language version `0.17.0`.
+
 ## Installation
 
 Add `rtt` as a dependency to `build.zig.zon` like so:
@@ -26,13 +27,13 @@ RTT is configured by creating the RTT "type" at `comptime` like so:
 const rtt_instance = rtt.RTT(.{
     // A slice of rtt.channel.Config for target -> probe communication
     .up_channels = &.{
-        .{ .name = "Terminal", .mode = .NoBlockSkip, .buffer_size = 128 },
-        .{ .name = "Up2", .mode = .NoBlockSkip, .buffer_size = 256 },
+        .{ .name = "Terminal", .mode = .no_block_skip, .buffer_size = 128 },
+        .{ .name = "Up2", .mode = .no_block_skip, .buffer_size = 256 },
     },
     // A slice of rtt.channel.Config for probe -> target communication
     .down_channels = &.{
-        .{ .name = "Terminal", .mode = .BlockIfFull, .buffer_size = 512 },
-        .{ .name = "Down2", .mode = .BlockIfFull, .buffer_size = 1024 },
+        .{ .name = "Terminal", .mode = .block_if_full, .buffer_size = 512 },
+        .{ .name = "Down2", .mode = .block_if_full, .buffer_size = 1024 },
     },
     // Optional override of lock/unlock functionality for thread safe RTT
     .exclusive_access = your_lock_struct,

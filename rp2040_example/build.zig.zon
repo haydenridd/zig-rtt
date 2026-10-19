@@ -5,8 +5,8 @@
     .dependencies = .{
         .rtt = .{ .path = "../" },
         .microzig = .{
-            .url = "https://github.com/ZigEmbeddedGroup/microzig/releases/download/0.15.0/microzig.tar.gz",
-            .hash = "microzig-0.15.0-D20YSTUgCADpOaRtQ4SOk0HJ_E4342rgS9m3LQGhITbd",
+            .url = "https://github.com/ZigEmbeddedGroup/microzig/releases/download/0.17.23/microzig.tar.gz",
+            .hash = "microzig-0.17.23-D20YSYnHAAB1PdDbdj8ICbpvhfvmmS8osqb2Me7lA5IT",
         },
     },
 

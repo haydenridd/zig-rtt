@@ -7,6 +7,16 @@ const time = rp2xxx.time;
 const Pin = rp2xxx.gpio.Pin;
 const gpio = rp2xxx.gpio;
 
+pub const panic = microzig.panic;
+// Assigns our custom RTT logging function to MicroZig's log function
+// A "pub const std_options" decl could be used here instead if not using MicroZig
+pub const std_options = microzig.std_options(.{
+    .logFn = log,
+});
+comptime {
+    _ = microzig.export_startup();
+}
+
 /// Dummy example of defining a custom locking/unlocking mechanisms for thread safety
 const pretend_thread_safety = struct {
     var locked: bool = false;
@@ -30,12 +40,12 @@ const pretend_thread_safety = struct {
 // well as a custom locking routine and specific linker placement.
 const rtt_instance = rtt.RTT(.{
     .up_channels = &.{
-        .{ .name = "Terminal", .mode = .NoBlockSkip, .buffer_size = 128 },
-        .{ .name = "Up2", .mode = .NoBlockSkip, .buffer_size = 256 },
+        .{ .name = "Terminal", .mode = .no_block_skip, .buffer_size = 128 },
+        .{ .name = "Up2", .mode = .no_block_skip, .buffer_size = 256 },
     },
     .down_channels = &.{
-        .{ .name = "Terminal", .mode = .BlockIfFull, .buffer_size = 512 },
-        .{ .name = "Down2", .mode = .BlockIfFull, .buffer_size = 1024 },
+        .{ .name = "Terminal", .mode = .block_if_full, .buffer_size = 512 },
+        .{ .name = "Down2", .mode = .block_if_full, .buffer_size = 1024 },
     },
     .exclusive_access = pretend_thread_safety.generic_lock.any(),
     .linker_section = ".rtt_cb",
@@ -72,12 +82,6 @@ pub fn log(
         writer.interface.flush() catch unreachable;
     }
 }
-
-// Assigns our custom RTT logging function to MicroZig's log function
-// A "pub const std_options" decl could be used here instead if not using MicroZig
-pub const microzig_options = microzig.Options{
-    .logFn = log,
-};
 
 pub fn main() !void {
 
