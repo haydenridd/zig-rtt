@@ -2,7 +2,7 @@
 
 An implementation of [Segger's RTT protocol](https://wiki.segger.com/RTT) in pure Zig.
 
-This library currently tracks Zig language version `0.17.0`.
+This library currently tracks Zig language version `0.17.1`.
 
 ## Installation
 
